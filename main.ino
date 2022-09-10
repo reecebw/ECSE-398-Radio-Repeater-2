@@ -18,17 +18,17 @@ class MorseCodeRepeater {
   unsigned long dashDuration = dotDuration * 3;
   unsigned long spaceDuration = dotDuration * 4;
 
-	// Class Member Variables
-	// These are initialized at startup
-	int outputPin;  // the number of the audio signal pin
-	unsigned long repeatDuration;  // milliseconds between signal repition
+  // Class Member Variables
+  // These are initialized at startup
+  int outputPin;  // the number of the audio signal pin
+  unsigned long repeatDuration;  // milliseconds between signal repition
   int toneFrequency;  // Frequency in hertz of morse code tone
   String broadcast;  // The text to broadcast
 
 
 
-	// These maintain the current state
-	unsigned long previousMillis;  	// Stores time last morse code was played
+  // These maintain the current state
+  unsigned long previousMillis;   // Stores time last morse code was played
 
   // Constructor - creates a MorseCodeRepeater 
   // and initializes the member variables and state
@@ -104,6 +104,7 @@ class MorseCodeRepeater {
 int BUTTON_PIN = 2;  // analog pin used to connect the potentiometer
 int LED_PIN = 4;
 int MORSE_PIN = 3;
+int INPUT_PIN = A0;
 
 int inval;  // Raw on/off from LED
 int cutoffval;  // Value processed to turn off after certain time
@@ -122,7 +123,7 @@ int outval;  // Output to transmitter
 unsigned long start_time;
 unsigned long cutoff_start_time; 
 
-MorseCodeRepeater morseCodeRepeater(MORSE_PIN, 8000L, 700, "Hello");
+MorseCodeRepeater morseCodeRepeater(MORSE_PIN, 4000L , 700, "HCX73");
 
 void setup() {
   Serial.begin(9600);
@@ -133,6 +134,15 @@ void setup() {
 void loop() {
   // Input value
   inval = digitalRead(BUTTON_PIN);
+
+  int sensorValue = analogRead(INPUT_PIN);
+  if (sensorValue > 400) {
+    Serial.println("ON");
+  } else {
+    Serial.println("OFF");
+  }
+//  Serial.println(sensorValue);
+
 
   // ---------- Buffer when turn off code here ----------
 
@@ -185,7 +195,5 @@ if (cutoff_start_time != 0 && cutoff_delay_time <= millis() - cutoff_start_time)
   last_bufferval = bufferval; 
   delay(100);
 
-  morseCodeRepeater.update();
+//  morseCodeRepeater.update();
 }
-
-
