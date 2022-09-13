@@ -44,18 +44,17 @@ class MorseCodeRepeater {
     pinMode(outputPin, OUTPUT);
   }
 
-  void update() {
-    if (millis() - previousMillis > repeatDuration) {
-      previousMillis = millis();
+  boolean hasTimeElapsed() {
+    return millis() - previousMillis > repeatDuration;
+  }
 
-      Serial.println("Playing Morse Code");
-      digitalWrite(4,1);
-      delay(1000);
-      for (int i = 0; i < broadcast.length(); i++) {
-        outputCharacterSequence(broadcast[i]);
-      }
-      delay(1000);
-      digitalWrite(4,0);
+  boolean resetTimer() {
+      previousMillis = millis();
+  }
+  
+  void playMorseCode() {
+    for (int i = 0; i < broadcast.length(); i++) {
+      outputCharacterSequence(broadcast[i]);
     }
   }
 
@@ -104,8 +103,7 @@ class MorseCodeRepeater {
   }
 };
 
-int BUTTON_PIN = 2;
-int LED_PIN = 4;
+int OUTPUT_PIN = 4;
 int MORSE_PIN = 3;
 int INPUT_PIN = A0;
 
@@ -130,29 +128,24 @@ MorseCodeRepeater morseCodeRepeater(MORSE_PIN, 12000L , 700, "VV");
 
 void setup() {
   Serial.begin(9600);
-  pinMode(BUTTON_PIN, INPUT);
-  pinMode(LED_PIN, OUTPUT);
+  pinMode(OUTPUT_PIN, OUTPUT);
 }
 
 void loop() {
-  // Input value
-  inval = digitalRead(BUTTON_PIN);
-
+  // Input value from receiving baofeng
   int sensorValue = analogRead(INPUT_PIN);
   if (sensorValue > 400) {
-//    Serial.println("ON");
+    inval = 1;
   } else {
-//    Serial.println("OFF");
+    inval = 0;
   }
-//  Serial.println(sensorValue);
-
 
   // ---------- Buffer when turn off code here ----------
 
   // Detect falling edge
   if (!inval && last_inval) {
-    Serial.println("Falling edge");
     start_time = millis();
+    Serial.print("Falling edge @ ");
     Serial.println(start_time);
   }
 
@@ -171,32 +164,37 @@ void loop() {
   cutoffval = bufferval;
 
 if(!last_bufferval && bufferval) {
-  Serial.println("Rising edge");
   cutoff_start_time = millis();
+  Serial.print("Rising edge @ ");
+  Serial.println(cutoff_start_time);
 }
 
 if (cutoff_start_time != 0 && cutoff_delay_time <= millis() - cutoff_start_time) {
   cutoffval = 0;
-
 } else {
   cutoffval = bufferval; 
 }
 
-
-
   // ------------------------------------------------------
-
-
   // Output here
   outval = cutoffval;
 
   // Output the final output to turn on transmitter
-  digitalWrite(LED_PIN, outval);
+  digitalWrite(OUTPUT_PIN, outval);
 
 
   last_inval = inval;
   last_bufferval = bufferval; 
   delay(100);
 
-  morseCodeRepeater.update();
+  if (morseCodeRepeater.hasTimeElapsed()) {
+      Serial.print("Playing Morse Code @ ");
+      Serial.println(millis());
+      morseCodeRepeater.resetTimer();
+      digitalWrite(OUTPUT_PIN,1);
+      delay(1000);
+      morseCodeRepeater.playMorseCode();
+      delay(1000);
+      digitalWrite(OUTPUT_PIN,0);
+  }
 }
