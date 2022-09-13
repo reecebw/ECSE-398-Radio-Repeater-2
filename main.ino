@@ -48,11 +48,14 @@ class MorseCodeRepeater {
     if (millis() - previousMillis > repeatDuration) {
       previousMillis = millis();
 
-      // Serial.println("Playing Morse Code");
+      Serial.println("Playing Morse Code");
+      digitalWrite(4,1);
+      delay(1000);
       for (int i = 0; i < broadcast.length(); i++) {
         outputCharacterSequence(broadcast[i]);
       }
-
+      delay(1000);
+      digitalWrite(4,0);
     }
   }
 
@@ -101,7 +104,7 @@ class MorseCodeRepeater {
   }
 };
 
-int BUTTON_PIN = 2;  // analog pin used to connect the potentiometer
+int BUTTON_PIN = 2;
 int LED_PIN = 4;
 int MORSE_PIN = 3;
 int INPUT_PIN = A0;
@@ -123,7 +126,7 @@ int outval;  // Output to transmitter
 unsigned long start_time;
 unsigned long cutoff_start_time; 
 
-MorseCodeRepeater morseCodeRepeater(MORSE_PIN, 4000L , 700, "HCX73");
+MorseCodeRepeater morseCodeRepeater(MORSE_PIN, 12000L , 700, "VV");
 
 void setup() {
   Serial.begin(9600);
@@ -137,9 +140,9 @@ void loop() {
 
   int sensorValue = analogRead(INPUT_PIN);
   if (sensorValue > 400) {
-    Serial.println("ON");
+//    Serial.println("ON");
   } else {
-    Serial.println("OFF");
+//    Serial.println("OFF");
   }
 //  Serial.println(sensorValue);
 
@@ -195,5 +198,5 @@ if (cutoff_start_time != 0 && cutoff_delay_time <= millis() - cutoff_start_time)
   last_bufferval = bufferval; 
   delay(100);
 
-//  morseCodeRepeater.update();
+  morseCodeRepeater.update();
 }
