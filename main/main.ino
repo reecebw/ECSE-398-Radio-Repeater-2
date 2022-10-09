@@ -14,7 +14,7 @@ class MorseCodeRepeater {
   "-....", "--...", "---..", "----."
   };
 
-  unsigned long dotDuration = 100; // ms
+  unsigned long dotDuration = 70; // ms
   unsigned long dashDuration = dotDuration * 3;
   unsigned long spaceDuration = dotDuration * 4;
 
@@ -108,15 +108,15 @@ int OUTPUT_PIN = 12;
 int MORSE_PIN = 3;
 int INPUT_PIN = A0;
 
-long BUFFER_DELAY_TIME = 2000l;  // 2 seconds, in ms
+long BUFFER_DELAY_TIME = 3000;  // 2 seconds, in ms
 long CUTOFF_PERIOD_TIME = 3 * 60 * 1000;  // 3 minutes, in ms
 long DEBOUNCE_TIME = 250; // ms
 
 long MORSE_REPEAT_TIME = 30 * 1000; //ms
 int MORSE_FREQUENCY = 700;
-String MORSE_STRING = "VV";
+String MORSE_STRING = "W8EDU";
 
-int RECEIVER_ON_THRESHOLD = 400;  // Analog read out of 1024
+int RECEIVER_ON_THRESHOLD = 300;  // Analog read out of 1024
 
 // Quindar tone for turning off https://en.m.wikipedia.org/wiki/Quindar_tones
 long QUINDAR_OFF_DURATION = 250; // ms
@@ -150,6 +150,7 @@ void setup() {
 void loop() {
   // Input value from receiving baofeng
   int sensorValue = analogRead(INPUT_PIN);
+
   if (sensorValue > RECEIVER_ON_THRESHOLD) {
     inval = 1;
   } else {
