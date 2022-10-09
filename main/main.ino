@@ -110,8 +110,9 @@ int INPUT_PIN = A0;
 
 long BUFFER_DELAY_TIME = 2000l;  // 2 seconds, in ms
 long CUTOFF_PERIOD_TIME = 3 * 60 * 1000;  // 3 minutes, in ms
+long DEBOUNCE_TIME = 250; // ms
 
-long MORSE_REPEAT_TIME = 8000L;
+long MORSE_REPEAT_TIME = 30 * 1000; //ms
 int MORSE_FREQUENCY = 700;
 String MORSE_STRING = "VV";
 
@@ -125,10 +126,11 @@ boolean QUINDAR_ENABLED = true;
 int inval;  // Raw on/off from LED
 int cutoffval;  // Value processed to turn off after certain time
 int bufferval;  // Value processed to stay on a bit after input turns off
+int debounceval;  // For disregarding a clacking input
 
 
-int last_inval;
 int last_bufferval;
+int last_debounceval;
 
 
 int outval;  // Output to transmitter
@@ -136,6 +138,7 @@ int last_outval;
 
 unsigned long start_time;
 unsigned long cutoff_start_time; 
+unsigned long debounce_start_time;
 
 MorseCodeRepeater morseCodeRepeater(MORSE_PIN, MORSE_REPEAT_TIME , MORSE_FREQUENCY, MORSE_STRING);
 
@@ -153,6 +156,19 @@ void loop() {
     inval = 0;
   }
 
+  // ---------- Debounce input here ----------
+  if (!inval) {
+    // Continously reset start time when input is off.
+    // Then, when input is on, we can count the ms until we should turn on.
+    debounce_start_time = millis();
+    debounceval = 0;
+  } else if (millis() - debounce_start_time >= DEBOUNCE_TIME) {
+    debounceval = 1;
+  } else {
+    debounceval = 0;
+  }
+
+
   // Morse code is a blocking call. Insert this here so it can simulate the 
   // inval being set to 1, and the start times can be set appropriatley.
   // We do many hacks with the other variables to make them behave properly.
@@ -165,13 +181,13 @@ void loop() {
       morseCodeRepeater.playMorseCode();
       
       // Simulate the morse code as the reciever recieving, so it gets the adequate buffer delay.
-      inval = 1;
+      debounceval = 1;
   }
 
   // ---------- Buffer when turn off code here ----------
 
   // Detect falling edge
-  if (!inval && last_inval) {
+  if (!debounceval && last_debounceval) {
     start_time = millis();
     Serial.print("Falling edge @ ");
     Serial.println(start_time);
@@ -182,7 +198,7 @@ void loop() {
   if (start_time != 0 && millis() - start_time <= BUFFER_DELAY_TIME) {
     bufferval = 1;
   } else {
-    bufferval = inval;
+    bufferval = debounceval;
   }
 
   // ------------------------------------------------------
@@ -219,9 +235,9 @@ if (cutoff_start_time != 0 && CUTOFF_PERIOD_TIME <= millis() - cutoff_start_time
 
   digitalWrite(OUTPUT_PIN, outval);
 
-  last_inval = inval;
   last_bufferval = bufferval;
   last_outval = outval;
+  last_debounceval = debounceval;
 
   delay(100);  // Loop at 10Hz
 }
