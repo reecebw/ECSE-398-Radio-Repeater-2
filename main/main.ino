@@ -1,107 +1,4 @@
-class MorseCodeRepeater {
-
-  // Morse code related constants
-  // Morse code letters
-  const char* letters[26] = {
-  ".-", "-...", "-.-.", "-..", ".", "..-.", "--.", "....", "..", // A-I
-  ".---", "-.-", ".-..", "--", "-.", "---", ".--.", "--.-", ".-.", // J-R 
-  "...", "-", "..-", "...-", ".--", "-..-", "-.--", "--.." // S-Z
-  };
-
-  // Morse code numbers
-  const char* numbers[10] = {
-    "-----", ".----", "..---", "...--", "....-", ".....",
-  "-....", "--...", "---..", "----."
-  };
-
-  unsigned long dotDuration = 70; // ms
-  unsigned long dashDuration = dotDuration * 3;
-  unsigned long spaceDuration = dotDuration * 4;
-
-  // Class Member Variables
-  // These are initialized at startup
-  int outputPin;  // the number of the audio signal pin
-  unsigned long repeatDuration;  // milliseconds between signal repition
-  int toneFrequency;  // Frequency in hertz of morse code tone
-  String broadcast;  // The text to broadcast
-
-
-
-  // These maintain the current state
-  unsigned long previousMillis;   // Stores time last morse code was played
-
-  // Constructor - creates a MorseCodeRepeater 
-  // and initializes the member variables and state
-  public:
-  MorseCodeRepeater(int outputPin, long repeatDuration, int toneFrequency, String broadcast) {
-    this->outputPin = outputPin;
-    this->repeatDuration = repeatDuration;
-    this->toneFrequency = toneFrequency;
-    this->broadcast = broadcast;
-
-    previousMillis = 0;
-
-    pinMode(outputPin, OUTPUT);
-  }
-
-  boolean hasTimeElapsed() {
-    return millis() - previousMillis > repeatDuration;
-  }
-
-  boolean resetTimer() {
-      previousMillis = millis();
-  }
-  
-  void playMorseCode() {
-    for (int i = 0; i < broadcast.length(); i++) {
-      outputCharacterSequence(broadcast[i]);
-    }
-  }
-
-  private:
-  void outputCharacterSequence(char ch) {
-    // Convert the character to an index in the corresponding array by subtracting
-    // the ascii value of 'a' or '0'. Spaces manifest as just a delay
-    // Serial.println(ch);
-    if (ch >= 'a' && ch <= 'z') {
-      outputMorseSequence(letters[ch - 'a']);
-    } else if (ch >= 'A' && ch <= 'Z') {
-      outputMorseSequence(letters[ch - 'A']);
-    } else if (ch >= '0' && ch <= '9') {
-      outputMorseSequence(numbers[ch - '0']);
-    } else if (ch == ' ') {
-      delay(spaceDuration);
-    } else {
-      Serial.print("Unkown character ");
-      Serial.println(ch);
-    }
-  }
-
-  void outputMorseSequence(char* sequence) {
-    int i = 0;
-    while (sequence[i] != NULL) {
-      outputDotOrDash(sequence[i]);
-      i++;
-    }
-
-    // After each letter there is a dash delay
-    delay(dashDuration);
-  }
-
-  void outputDotOrDash(char dotOrDash) {
-    tone(outputPin, toneFrequency);
-    // Serial.println(dotOrDash);
-    if (dotOrDash == '.') {
-      delay(dotDuration);
-    } else { // must be a -
-      delay(dashDuration);
-    }
-    noTone(outputPin);
-
-    // After each dot or dash, there is a dot length delay
-    delay(dotDuration);
-  }
-};
+#include "MorseCodeRepeater.cpp"
 
 // CONSTANTS
 int OUTPUT_PIN = 12;
@@ -114,6 +11,7 @@ long DEBOUNCE_TIME = 250; // ms
 
 long MORSE_REPEAT_TIME = 30 * 1000; //ms
 int MORSE_FREQUENCY = 700;
+int MORSE_DOT_DURATION = 70;  // ms. Represents the base unit of time for morse code.
 String MORSE_STRING = "W8EDU";
 
 int RECEIVER_ON_THRESHOLD = 300;  // Analog read out of 1024
@@ -140,7 +38,7 @@ unsigned long start_time;
 unsigned long cutoff_start_time; 
 unsigned long debounce_start_time;
 
-MorseCodeRepeater morseCodeRepeater(MORSE_PIN, MORSE_REPEAT_TIME , MORSE_FREQUENCY, MORSE_STRING);
+MorseCodeRepeater morseCodeRepeater(MORSE_PIN, MORSE_REPEAT_TIME, MORSE_FREQUENCY, MORSE_DOT_DURATION, MORSE_STRING);
 
 void setup() {
   Serial.begin(9600);
