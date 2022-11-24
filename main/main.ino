@@ -7,9 +7,9 @@ int INPUT_PIN = A0;
 
 long BUFFER_DELAY_TIME = 3000;  // 2 seconds, in ms
 long CUTOFF_PERIOD_TIME = 3 * 60 * 1000;  // 3 minutes, in ms
-long DEBOUNCE_TIME = 250; // ms
+long DEBOUNCE_TIME = 350; // ms
 
-long MORSE_REPEAT_TIME = 30 * 1000; //ms
+long MORSE_REPEAT_TIME = 120 * 1000; //ms
 int MORSE_FREQUENCY = 700;
 int MORSE_DOT_DURATION = 70;  // ms. Represents the base unit of time for morse code.
 String MORSE_STRING = "W8EDU";
